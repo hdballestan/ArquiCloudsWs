@@ -12,7 +12,7 @@ def send_sns_notification(message):
     response = sns_client.publish(
         TopicArn=E.SNS_ARN_,
         Message=message,
-        Subject='Masw.ai has stopped suddenly!'
+        Subject='Avisame has stopped suddenly!'
     )
     return response
 
