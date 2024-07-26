@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Status Check</title>
+</head>
+<body>
+    <h1>Check URL Status</h1>
+    <form id="url-form">
+        <label for="url">URL:</label>
+        <input type="text" id="url" name="url" required>
+        <input type="submit" value="Check Status">
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('url-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const url = document.getElementById('url').value;
+            const response = await fetch('/check-url-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: url })
+            });
+            const result = await response.json();
+            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+        });
+    </script>
+</body>
+</html>
+
