@@ -1,73 +1,62 @@
-import subprocess
-import re
-import boto3
 import time
+import requests
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-import requests
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from connection import sns_client
 import environment as E
+import threading
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-container_status_cache = {}
 
 def send_sns_notification(message):
-    print(E.SNS_ARN_)
     response = sns_client.publish(
         TopicArn=E.SNS_ARN_,
         Message=message,
-        Subject='Page Stopped!'
+        Subject='Page Status Notification'
     )
     return response
 
-def parse_docker_event_line(line):
-    match = re.match(r'(\S+) (\S+) (\S+) (\S+)(.*)', line)
-    if match:
-        timestamp, event_type, action, container_id, attributes = match.groups()
-        attributes_dict = dict(re.findall(r'(\S+)=(\S+)', attributes))
-        container_name = attributes_dict.get('name', 'N/A')
-        return container_id, action, container_name
-    return None, None, None
-
-class URLCheckRequest(BaseModel):
+class MonitoringRequest(BaseModel):
     url: str
+    time: int  # Time interval in seconds
+    status: str  # Desired status to monitor ('on' or 'off')
 
-@app.post("/monitor-docker-events")
-async def monitor_docker_events():
-    process = subprocess.Popen(['docker', 'events', '--filter', 'event=die', '--filter', 'event=stop'],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    for line in iter(process.stdout.readline, b''):
-        line = line.decode('utf-8').strip()
-        container_id, action, container_name = parse_docker_event_line(line)
-        if container_id and action:
-            last_notification_time = container_status_cache.get(container_id, 0)
-            current_time = time.time()
-            if current_time - last_notification_time > 60:    
-                message = f"Container {container_name} has {action}. The server has stopped!!"
+def monitor_url(url: str, interval: int, status: str):
+    while True:
+        try:
+            response = requests.get(url)
+            if status == "on" and response.status_code == 200:
+                message = f"The URL {url} is now online (status code 200)."
                 send_sns_notification(message)
-                container_status_cache[container_id] = current_time
-        else:
-            print(f"Ignored line: {line}")
-    return {"status": "Monitoring docker events"}
+                break  # Stop monitoring once the site is online
 
-@app.post("/check-url-status")
-async def check_url_status(request: URLCheckRequest):
-    try:
-        response = requests.get(request.url)
-        if response.status_code == 200:
-            return {"url": request.url, "status": "URL is reachable"}
-        else:
-            message = "The website is down." 
-            send_sns_notification(message)
-            return {"url": request.url, "status": f"URL returned status code {response.status_code}"}
+            elif status == "off" and response.status_code != 200:
+                message = f"The URL {url} has gone offline (status code {response.status_code})."
+                send_sns_notification(message)
+                break  # Stop monitoring once the site is offline
 
-    except requests.RequestException as e:
-        return {"url": request.url, "status": f"Failed to reach URL. Error: {str(e)}"}
+        except requests.RequestException as e:
+            if status == "off":
+                message = f"The URL {url} has gone offline. Error: {str(e)}"
+                send_sns_notification(message)
+                break  # Stop monitoring once the site is confirmed offline
+
+        time.sleep(interval)
+
+@app.post("/start-monitoring")
+async def start_monitoring(request: MonitoringRequest):
+    # Start the monitoring in a separate thread
+    thread = threading.Thread(target=monitor_url, args=(request.url, request.time, request.status))
+    thread.start()
+    return {"status": "Monitoring started", "url": request.url, "check_interval": request.time, "desired_status": request.status}
 
 @app.get("/", response_class=HTMLResponse)
 async def read_form(request: Request):
     return templates.TemplateResponse("form.html", {"request": request})
+
+
+
 

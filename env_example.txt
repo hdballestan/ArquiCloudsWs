@@ -1,0 +1,4 @@
+AWS_ACCESS_KEY_ID="AKIA"
+AWS_SECRET_ACCESS_KEY="8AY8...CyKH"
+AWS_REGION="us-east-1"
+SNS_ARN="arn:aws:sns:us-east-1:xxxxxxxxxx:ArquiCloudWs"

@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>URL Status Check</title>
+    <title>URL Status Monitor</title>
 </head>
 <body>
-    <h1>Check URL Status</h1>
+    <h1>Monitor URL Status</h1>
     <form id="url-form">
         <label for="url">URL:</label>
-        <input type="text" id="url" name="url" required>
-        <input type="submit" value="Check Status">
+        <input type="text" id="url" name="url" required><br><br>
+
+        <label for="time">Check every:</label>
+        <select id="time" name="time">
+            <option value="60">1 minute</option>
+            <option value="300">5 minutes</option>
+            <option value="1800">30 minutes</option>
+            <option value="3600">1 hour</option>
+        </select><br><br>
+
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="on">On</option>
+            <option value="off">Off</option>
+        </select><br><br>
+
+        <input type="submit" value="Start Monitoring">
     </form>
 
     <div id="result"></div>
@@ -17,17 +32,23 @@
         document.getElementById('url-form').addEventListener('submit', async function(event) {
             event.preventDefault();
             const url = document.getElementById('url').value;
-            const response = await fetch('/check-url-status', {
+            const time = document.getElementById('time').value;
+            const status = document.getElementById('status').value;
+
+            const response = await fetch('/start-monitoring', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ url: url })
+                body: JSON.stringify({ url: url, time: time, status: status })
             });
+
             const result = await response.json();
             document.getElementById('result').innerText = JSON.stringify(result, null, 2);
         });
     </script>
 </body>
 </html>
+
+
 
