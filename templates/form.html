@@ -1,32 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>URL Status Monitor</title>
+    <title>Avísame</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0073e6;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            text-align: left;
+            color: #555;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input[type="submit"] {
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #005bb5;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: left;
+            word-wrap: break-word;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e1e1e1;
+        }
+    </style>
 </head>
 <body>
-    <h1>Monitor URL Status</h1>
-    <form id="url-form">
-        <label for="url">URL:</label>
-        <input type="text" id="url" name="url" required><br><br>
+    <div class="container">
+        <h1>Monitor URL Status</h1>
+        <form id="url-form">
+            <label for="url">URL:</label>
+            <input type="text" id="url" name="url" required>
 
-        <label for="time">Check every:</label>
-        <select id="time" name="time">
-            <option value="60">1 minute</option>
-            <option value="300">5 minutes</option>
-            <option value="1800">30 minutes</option>
-            <option value="3600">1 hour</option>
-        </select><br><br>
+            <label for="time">¿Cada cuánto quieres que te notifiquemos?:</label>
+            <select id="time" name="time">
+                <option value="60">1 minuto</option>
+                <option value="300">5 minutos</option>
+                <option value="1800">30 minutos</option>
+                <option value="3600">1 hora</option>
+            </select>
 
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-            <option value="on">On</option>
-            <option value="off">Off</option>
-        </select><br><br>
+            <label for="status">¿Avisarte cuando se caigo o cuando esté de vuelta online?:</label>
+            <select id="status" name="status">
+                <option value="on">On</option>
+                <option value="off">Off</option>
+            </select>
 
-        <input type="submit" value="Start Monitoring">
-    </form>
+            <input type="submit" value="Iniciar el monitoreo">
+        </form>
 
-    <div id="result"></div>
+        <div id="result"></div>
+    </div>
 
     <script>
         document.getElementById('url-form').addEventListener('submit', async function(event) {
@@ -49,6 +122,5 @@
     </script>
 </body>
 </html>
-
 
 
